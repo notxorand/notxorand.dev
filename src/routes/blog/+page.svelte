@@ -12,7 +12,7 @@
 
 <div class="space-y-4">
 	{#each data.posts as post}
-		<a href="/blog/{post.slug}" class="my-2 no-underline!">
+		<a href="/blog/{post.slug}" class="my-2 block no-underline!">
 			<span class="underline"># {post.title}</span>
 			-
 			{#if post.date}
