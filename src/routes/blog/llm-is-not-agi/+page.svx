@@ -1,0 +1,17 @@
+---
+title: llm is not agi
+date: 2024-01-04
+author: ewan
+---
+
+# {title} by {author}
+
+<!--## {date}-->
+
+there's a common trend to centre everything around ai (gen ai, specifically), and for most, it's about llms. the end goal rn for foundation model labs, is agi.
+
+well, i'm no ai researcher, but it shouldn't take one to know that this isn't the path to agi. llms are just probabilistic token predictors that cannot live independently of external data. this is a contrast to rl (reinforcement learning) systems that can exist in a system independently and come up with novel data.
+
+i'm not sure why rl is not at the core rn, subjugated to processes such as rlhf, but i can tell that llms are not the future of agi. i'd previously thought rl was possible at scale whereby a model will be trained on data that'll be introduced in an experience like manner (as with children), but i'm not a researcher and this might be a really dumb take.
+
+maybe, what we're seeing is a smoke screen as true agi won't be handed out for commercial purpose (as seen with most frontier tech), maybe not. but i belive llm is not agi.

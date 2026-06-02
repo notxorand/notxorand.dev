@@ -1,0 +1,69 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+@font-face {
+	font-family: 'Monospace';
+	src: url('/fonts/Monospace.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Monospace';
+	src: url('/fonts/MonospaceBold.ttf') format('truetype');
+	font-weight: bold;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Monospace';
+	src: url('/fonts/MonospaceOblique.ttf') format('truetype');
+	font-weight: normal;
+	font-style: italic;
+}
+
+body {
+	font-family: 'Monospace', monospace;
+	@apply bg-[#fdf6e3];
+}
+
+main :where(h1)::before {
+	content: '# ';
+}
+
+main :where(h2)::before {
+	content: '## ';
+}
+
+main :where(h3)::before {
+	content: '### ';
+}
+
+main :where(h4)::before {
+	content: '#### ';
+}
+
+main :where(h5)::before {
+	content: '##### ';
+}
+
+main :where(h6)::before {
+	content: '###### ';
+}
+
+h1,
+h2,
+h3,
+h4,
+h5underline,
+h6 {
+	@apply my-3 font-semibold;
+}
+
+p {
+	@apply mb-2;
+}
+
+a {
+	@apply underline;
+}
