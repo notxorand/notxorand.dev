@@ -4,6 +4,10 @@ date: 2024-01-04
 author: ewan
 ---
 
+<svelte:head>
+	<title>{title} - ewan wrote</title>
+</svelte:head>
+
 # {title} by {author}
 
 <!--## {date}-->

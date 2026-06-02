@@ -4,6 +4,10 @@
 	let { data }: { data: PageData } = $props();
 </script>
 
+<svelte:head>
+	<title>ewan writes too</title>
+</svelte:head>
+
 <h1 class="mb-8">blog</h1>
 
 <div class="space-y-4">
