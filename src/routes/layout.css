@@ -52,6 +52,11 @@ main :where(h6)::before {
 	content: '###### ';
 }
 
+ul :where(li)::before {
+	content: '+ ';
+  @apply font-bold;
+}
+
 h1,
 h2,
 h3,
