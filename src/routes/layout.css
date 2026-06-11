@@ -25,6 +25,7 @@
 body {
 	font-family: 'Monospace', monospace;
 	@apply bg-[#fdf6e3];
+	text-align: justify;
 }
 
 main :where(h1)::before {
