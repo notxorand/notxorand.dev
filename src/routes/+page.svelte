@@ -25,7 +25,7 @@
 </script>
 
 <p>
-	hellooo, im Ewan, a systems engineer and a mechatronics engineering major. i write zig, rust, and
+	hellooo, I'm Ewan, a systems engineer and a mechatronics engineering major. I write zig, rust, and
 	use nix as my daily driver and for ci.
 </p>
 
@@ -36,7 +36,7 @@
 </span>
 
 <p class="mt-6 mb-3">
-	i currently contribute entirely to open-source and work on low-level systems.
+	I currently contribute entirely to open-source and work on low-level systems.
 </p>
 
 <div>
