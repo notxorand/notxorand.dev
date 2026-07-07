@@ -54,7 +54,11 @@ main :where(h6)::before {
 
 ul :where(li)::before {
 	content: '+ ';
-  @apply font-bold;
+	@apply font-bold;
+}
+
+ul {
+	@apply my-2;
 }
 
 h1,
