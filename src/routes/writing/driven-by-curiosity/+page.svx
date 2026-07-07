@@ -1,0 +1,19 @@
+---
+title: Driven by Curiosity
+date: 2024-07-07
+author: ewan
+---
+
+<svelte:head>
+	<title>{title} - ewan wrote</title>
+</svelte:head>
+
+# {title} by {author}
+
+How often do you just do things out of curiosity? Raised in a system where a handful of metrics are a measure of success, any action taken often has to serve a purpose towards those metrics. The indoctrination started early. In my primary and secondary school days we were handed a curriculum and were required to follow it religiously. If you deviated and went too deep into a subject that wouldn't be featured in your exams, you were left to your own. You just reduced the chances of seeing better numbers on your grade sheet.
+
+I was never one to diligently follow the curriculum handed out. I was curious and I let it drive me. People seemed to admire how much I knew beyond what was expected of me and that made me feel good. But then people started expecting more and unfortunately, I let people's admiration become my metric. I'd be approached by people older than me for my opinions and with hubris, I couldn't just be curious then. I always tried to give an answer, a lot of it being wrong of course. Then came a time when I decided to admit to myself that I wasn't up to par. I couldn't possibly be. Misjudging the reason for my initial curiosity, I replaced the reason for pursuing endeavours with things such as a career.
+
+I recently found myself depressed and exhausted, and just decided to take a break for weeks. Not doing anything that furthered any metric I'd been pursuing. One of the things I'm good at is writing code, so I decided to just write code. Not code with any particular use for my employability, or attempting to build a project. Code to just express something I'd been learning - Morse code. The programme I wrote was crude, it was barely anything noteworthy, but I'd not written code that made me feel as good as I did writing it. I felt what it meant back when I was 8 or so, discovering an encyclopedia and reading about evolution. Days when I used to spend hours just scrolling pages of the English dictionary just because.
+
+Currently, I don't think I'm in a state where I'm absolutely driven by my curiosity. However, I've come to a point where if I ever hear it knocking, I'd dive head first because curiosity makes me all the more happy and that's what matters.
