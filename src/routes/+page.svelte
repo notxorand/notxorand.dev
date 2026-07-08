@@ -53,3 +53,6 @@
 	find my resume: <a href="/resume.pdf" target="_blank">view</a> |
 	<a href="/resume.pdf" download>download</a>.
 </p>
+
+I also keep a log of research papers I've read<a href="https://github.com/notxorand/papers">here</a
+>.
