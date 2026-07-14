@@ -1,20 +1,19 @@
 <script lang="ts">
 	let projects = [
 		{
+			name: 'zio',
+			description: 'async I/O for zig with truly asynchronous std.Io interface.',
+			url: 'https://github.com/lalinsky/zio'
+		},
+		{
 			name: 'slung',
 			description: 'algebraic payload typed fact rule engine in zig.',
 			url: 'https://github.com/slunghq/slung'
 		},
 		{
-			name: 'fawna',
-			description: 'time series database engine in zig. 3.7m wps sustained.',
-			url: 'https://github.com/slunghq/fawna'
-		},
-		{
-			name: 'slipstream',
-			description:
-				'stateless serverless runtime for hardened compute inside intel sgx tees in rust.',
-			url: 'https://github.com/s3ndotxyz/runtime'
+			name: 'slick',
+			description: 'multiplayer twin-stick inspired battle arena rally game',
+			url: 'https://github.com/notxorand/slick'
 		},
 		{
 			name: 'quartz.zig',
@@ -22,6 +21,10 @@
 			url: 'https://github.com/notxorand/quartz.zig'
 		}
 	];
+
+	import type { PageData } from './$types';
+
+	let { data }: { data: PageData } = $props();
 </script>
 
 <p>
@@ -36,7 +39,7 @@
 </span>
 
 <p class="mt-6 mb-3">
-	I currently contribute entirely to open-source and work on low-level systems.
+	I currently contribute entirely to open-source and work on low-level systems:
 </p>
 
 <div>
@@ -54,5 +57,25 @@
 	<a href="/resume.pdf" download>download</a>.
 </p>
 
-I also keep a log of research papers I've read<a href="https://github.com/notxorand/papers">here</a
->.
+<p class="mt-6">
+	I also keep a log of research papers I've read
+	<a href="https://github.com/notxorand/papers">here</a>.
+</p>
+
+<p class="mt-6">read what I just wrote:</p>
+
+<div class="space-y-4">
+	{#each data.posts as post}
+		<a href="/writing/{post.slug}" class="my-2 block no-underline!">
+			<span class="underline"># {post.title}</span>
+			-
+			{#if post.date}
+				<span class="text-sm text-gray-500">{new Date(post.date).toLocaleDateString()}</span>
+			{/if}
+		</a>
+	{/each}
+</div>
+
+<a href="/writing" class="block no-underline!">
+	<span class="underline">more writings</span> <span class="text-sm text-gray-500">...</span>
+</a>

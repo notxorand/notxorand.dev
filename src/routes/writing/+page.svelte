@@ -8,7 +8,7 @@
 	<title>ewan writes too</title>
 </svelte:head>
 
-<h1 class="mb-8">blog</h1>
+<h1 class="mb-8">my writings</h1>
 
 <div class="space-y-4">
 	{#each data.posts as post}
