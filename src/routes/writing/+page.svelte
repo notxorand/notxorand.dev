@@ -6,6 +6,20 @@
 
 <svelte:head>
 	<title>ewan writes too</title>
+	<meta
+		name="description"
+		content="a collection of writings by me, Ewan on systems engineering, tech, and anything that enters my head."
+	/>
+	<meta property="og:title" content="ewan writes too" />
+	<meta
+		property="og:description"
+		content="a collection of writings by Ewan on systems engineering, tech, and anything that enters my head."
+	/>
+	<meta name="twitter:title" content="ewan writes too" />
+	<meta
+		name="twitter:description"
+		content="a collection of writings by Ewan on systems engineering, tech, and anything that enters my head."
+	/>
 </svelte:head>
 
 <h1 class="mb-8">my writings</h1>

@@ -58,11 +58,11 @@
 </p>
 
 <p class="mt-6">
-	I also keep a log of research papers I've read
+	I keep a log of research papers I've read
 	<a href="https://github.com/notxorand/papers">here</a>.
 </p>
 
-<p class="mt-6">read what I just wrote:</p>
+<p class="mt-6">also, I like to write. read what I just wrote:</p>
 
 <div class="space-y-4">
 	{#each data.posts as post}

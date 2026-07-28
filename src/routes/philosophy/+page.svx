@@ -1,4 +1,17 @@
-# personal philosophy
+---
+title: personal philosophy
+---
+
+<svelte:head>
+	<title>{title} - ewan is notxorand</title>
+	<meta name="description" content="Ewan's personal philosophy and principles." />
+	<meta property="og:title" content={title} />
+	<meta property="og:description" content="Ewan's personal philosophy and principles." />
+	<meta name="twitter:title" content={title} />
+	<meta name="twitter:description" content="Ewan's personal philosophy and principles." />
+</svelte:head>
+
+# {title}
 
 + do the hard things. it's your only true leverage. do what others find difficult till you find it not as difficult and keep going.
 + starting gives you 50%. showing up gives you another 25% of succeeding. just show up.

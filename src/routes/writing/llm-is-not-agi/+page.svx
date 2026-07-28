@@ -6,6 +6,12 @@ author: ewan
 
 <svelte:head>
 	<title>{title} - ewan wrote</title>
+	<meta name="description" content={title} />
+	<meta property="og:title" content={title} />
+	<meta property="og:description" content={title} />
+	<meta property="og:type" content="article" />
+	<meta name="twitter:title" content={title} />
+	<meta name="twitter:description" content={title} />
 </svelte:head>
 
 # {title} by {author}

@@ -6,6 +6,12 @@ author: ewan
 
 <svelte:head>
 	<title>{title} - ewan wrote</title>
+	<meta name="description" content={title} />
+	<meta property="og:title" content={title} />
+	<meta property="og:description" content={title} />
+	<meta property="og:type" content="article" />
+	<meta name="twitter:title" content={title} />
+	<meta name="twitter:description" content={title} />
 </svelte:head>
 
 # {title} by {author}
@@ -14,7 +20,7 @@ author: ewan
 
 *Note: This is a copy of an entry from the project's [website](https://slung.tech/blog/intro).*
 
-As an engineer, if you've ever worked with say IoT data and were trying to do work with your live data stream while trying to use any historical data, you probably designed a pipeline that looked like this:
+As an engineer, you've ever worked with say IoT data and were trying to do work with your live data stream while trying to use any historical data, you probably designed a pipeline that looked like this:
 
 + Kafka for ingestion
 + Flink for ETL
