@@ -59,6 +59,9 @@ importers:
       prettier-plugin-tailwindcss:
         specifier: ^0.7.2
         version: 0.7.4(prettier-plugin-svelte@3.5.2(prettier@3.8.3)(svelte@5.56.1(@typescript-eslint/types@8.60.1)))(prettier@3.8.3)
+      prismjs:
+        specifier: ^1.30.0
+        version: 1.30.0
       svelte:
         specifier: ^5.55.2
         version: 5.56.1(@typescript-eslint/types@8.60.1)

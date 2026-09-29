@@ -22,6 +22,11 @@
 	font-style: italic;
 }
 
+@font-face {
+  font-family: "Lilex";
+  src: url("/fonts/Lilex[wght].ttf");
+}
+
 body {
 	font-family: 'Monospace', monospace;
 	@apply bg-[#fdf6e3];
@@ -61,6 +66,15 @@ ul {
 	@apply my-2;
 }
 
+ol li {
+  list-style: number;
+}
+
+hr {
+  margin-top: 2rem;
+  border-top: 1px solid #ccc6b3;
+}
+
 h1,
 h2,
 h3,
@@ -76,4 +90,81 @@ p {
 
 a {
 	@apply underline;
+}
+
+code {
+  font-family: "Lilex";
+}
+
+main pre[class*='language-'] {
+	margin: 1rem 0;
+  margin-bottom: 2rem;
+	overflow-x: auto;
+	border: 1px solid #eee8d5;
+	border-radius: 0.125rem;
+	background: #eee8d5;
+	padding: 1rem;
+	text-align: left;
+}
+
+main pre[class*='language-'] code {
+	color: #586e75;
+	font-size: 0.875em;
+}
+
+main :not(pre) > code {
+	border-radius: 0.25rem;
+	background: #eee8d5;
+	padding: 0.1em 0.25em;
+	font-family: 'Monospace', monospace;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+	color: #93a1a1;
+}
+
+.token.punctuation,
+.token.operator {
+	color: #657b83;
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol {
+	color: #cb4b16;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+	color: #859900;
+}
+
+.token.keyword,
+.token.important,
+.token.atrule {
+	color: #268bd2;
+}
+
+.token.function,
+.token.class-name {
+	color: #b58900;
+}
+
+.token.regex,
+.token.variable {
+	color: #d33682;
+}
+
+.token.deleted {
+	color: #dc322f;
 }
