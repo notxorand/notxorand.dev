@@ -1,0 +1,251 @@
+---
+title: Don't Drop Your Server Connections
+date: 2026-10-05
+author: Ewan
+---
+
+<svelte:head>
+	<title>{title} - ewan wrote</title>
+	<meta name="description" content={title} />
+	<meta property="og:title" content={title} />
+	<meta property="og:description" content={title} />
+	<meta property="og:type" content="article" />
+	<meta name="twitter:title" content={title} />
+	<meta name="twitter:description" content={title} />
+</svelte:head>
+
+# {title} by {author}
+
+A recent interview I did presented me with a task: a process serving connections over the internet will need redeployments and so, we'll need to drop connections during the handoff. How do we safely handle dropping connections without disrupting user experience? The obvious solution was honestly quite trivial, albeit with its own complications, but no, no, I chose to present something more complex. I thought to myself, "do we even need to drop connections at all?".
+
+Now, if you know anything about how connections are handled on UNIX, you should be well aware that basically every connection is just a socket, and this socket is represented by a file descriptor (fd) -- yes, connections are basically files. What this means is that once a connection is established, we can simply change who makes use of the socket by passing the fd around. With this knowledge, you should be able to safely infer, dear reader, the core of my grand proposal: why don't we just pass the fd across from the old process to the new one? How hard can it be?
+
+Firstly, we cannot simply pass the raw fd to other processes as it exists as an integer in a process' local fd table, which points to the OS' open file table, which points to the vnode representing the file. Fortunately, the kernel provides us with something called `SCM_RIGHTS` which duplicates our socket fd into another process' fd table as a new fd (don't expect a socket to have the same fd value across processes).
+
+We're fortunate to be provided with a simple example of how to use `SCM_RIGHTS` in C via `man 3 cmsg`. 
+
+```c
+   struct msghdr msg = { 0 };
+   struct cmsghdr *cmsg;
+   int myfds[NUM_FD];  /* Contains the file descriptors to pass */
+   int *fdptr;
+   union {         /* Ancillary data buffer, wrapped in a union
+                      in order to ensure it is suitably aligned */
+       char buf[CMSG_SPACE(sizeof(myfds))];
+       struct cmsghdr align;
+   } u;
+
+   msg.msg_control = u.buf;
+   msg.msg_controllen = sizeof(u.buf);
+   cmsg = CMSG_FIRSTHDR(&msg);
+   cmsg->cmsg_level = SOL_SOCKET;
+   cmsg->cmsg_type = SCM_RIGHTS;
+   cmsg->cmsg_len = CMSG_LEN(sizeof(int) * NUM_FD);
+   fdptr = (int *) CMSG_DATA(cmsg);    /* Initialize the payload */
+   memcpy(fdptr, myfds, NUM_FD * sizeof(int));
+```
+
+For this blog post, however, I intend to mostly show Rust code but the Rust equivalent code is quite verbose. Thankfully, we're provided with a nice library called [sendfd](https://docs.rs/sendfd) that abstracts it away for us.
+
+```rust
+use std::os::unix::net::{UnixListener, UnixStream};
+use sendfd::SendWithFd;
+
+const SOCKET_PATH: &str = "/tmp/socket";
+
+fn send_sockets(sockets: &[i32]) -> Result<(), Box<dyn std::error::Error>> {
+    // Clean up any old sockets
+    let _ = std::fs::remove_file(SOCKET_PATH);
+    // Bind to socket path
+    let listener = UnixListener::bind(SOCKET_PATH)?;
+    let (stream, _) = listener.accept()?;
+    // Send sockets with empty data (we don't need to send any extra data)
+    let data = [0u8];
+    stream.send_with_fd(&data, sockets)?;
+
+    Ok(())
+}
+
+fn receive_sockets() -> Result<Vec<i32>, Box<dyn std::error::Error>> {
+    // Connect to socket path
+    let stream = loop {
+        match UnixStream::connect(SOCKET_PATH) {
+            Ok(stream) => break stream,
+            Err(error)
+                if matches!(
+                    error.kind(),
+                    std::io::ErrorKind::NotFound | std::io::ErrorKind::ConnectionRefused
+                ) =>
+            {
+                std::thread::sleep(std::time::Duration::from_millis(100));
+            }
+            Err(error) => return Err(error.into()),
+        }
+    };
+
+    // Receive sockets
+    let mut bytes = [0u8; 1024];
+    let mut fds = vec![0; 16];
+    let (_, fd_count) = stream.recv_with_fd(&mut bytes, &mut fds)?;
+    fds.truncate(fd_count);
+    Ok(fds)
+}
+```
+
+Now, we need to handle state transitions between the old and new process. First, how do we let the old process know it's time to hand off its open connections? My solution is quite simple, we watch for `SIGINT`/`SIGTERM` and start a shutdown process which we can do with [libc](https://docs.rs/libc).
+
+```rust
+use std::atomic::{AtomicBool, Ordering};
+
+static SHUTDOWN: AtomicBool = AtomicBool::new(false);
+
+extern "C" fn handle_sig_polite(_: libc::c_int) {
+    SHUTDOWN.store(true, Ordering::Relaxed);
+}
+
+fn is_shutting_down() -> bool {
+    SHUTDOWN.load(Ordering::Acquire)
+}
+
+...
+    unsafe {
+        libc::signal(
+            libc::SIGINT,
+            handle_sig_polite as *const () as libc::sighandler_t,
+        );
+        libc::signal(
+            libc::SIGTERM,
+            handle_sig_polite as *const () as libc::sighandler_t,
+        );
+    }
+    // rest of process
+
+...
+    if is_shutting_down() {
+        // handle shutdown
+    }
+...
+
+```
+
+We now need to explicitly handle the shutdown process. First, we simply pause accepting new connections and pass all our open connection fds after which the old process stops consuming any incoming connection bytes and handles any it has already consumed. I won't be covering this as it's quite specific to what your server does. The important piece for this post is how we set up a way to co-ordinate with the new process, letting it know it can safely start consuming incoming connections. A simple solution is for new processes to poll a socket path where the old process will let it know it no longer consumes from the connections.
+
+```rust
+const SOCKET_PATH_STATUS: &str = "/tmp/socket_s.sock";
+
+fn notify_new() -> Result<(), Box<dyn std::error::Error>> {
+    let _ = std::fs::remove_file(SOCKET_PATH_STATUS);
+    let listener = UnixListener::bind(SOCKET_PATH_STATUS)?;
+    let (mut stream, _) = listener.accept()?;
+    stream.write_all(b"old-stopped-fetching-core")?;
+    Ok(())
+}
+
+
+fn receive_handoff_complete() -> Result<(), Box<dyn std::error::Error>> {
+    let mut stream = loop {
+        match UnixStream::connect(SOCKET_PATH_STATUS) {
+            Ok(stream) => break stream,
+            Err(error)
+                if matches!(
+                    error.kind(),
+                    std::io::ErrorKind::NotFound | std::io::ErrorKind::ConnectionRefused
+                ) =>
+            {
+                std::thread::sleep(std::time::Duration::from_millis(100));
+            }
+            Err(error) => return Err(error.into()),
+        }
+    };
+
+    let mut message = [0u8; 25];
+    stream.read_exact(&mut message)?;
+    if &message != b"old-stopped-fetching-core" {
+        return Err("received an invalid handoff status".into());
+    }
+    Ok(())
+}
+```
+
+![connections being passed](dont-drop-1.png)
+<span class="caption">We safely pass connections from one process to the other. Notice that the fds are not identical across processes (4 matches coincidentally).</span>
+
+So far, we've mostly handled processes handing off their connections. However, if you're adept with how server processes actually work, you'll be quick to ask me "can both processes listen on the same port?". No, two processes cannot bind to a single port on the same machine and that's where the third part of my original proposal comes in -- a porter. With the power of fd passing magic, we don't need our processes to listen for new connections at all. We just simply need to handle them and a thin process, I call a porter, to listen for connections for us. And it should be so thin and lightweight that it never needs to be redeployed.
+
+
+```rust
+use std::{
+    net::TcpListener,
+    os::{fd::AsRawFd, unix::net::UnixListener},
+};
+
+use sendfd::SendWithFd;
+
+const TCP_ENDPOINT: &str = "0.0.0.0:4848";
+const SOCKET_PATH: &str = "/tmp/socket.sock";
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let listener = TcpListener::bind(TCP_ENDPOINT)?;
+    println!("Listening on {TCP_ENDPOINT}");
+
+    loop {
+        let (stream, _) = match listener.accept() {
+            Ok(connection) => connection,
+            Err(error) => {
+                eprintln!("Failed to accept TCP connection: {error}");
+                continue;
+            }
+        };
+
+        if let Err(error) = send_sockets(&[stream.as_raw_fd()]) {
+            eprintln!("Failed to send socket to process: {error}");
+        }
+    }
+}
+
+// send_sockets function
+```
+
+That's it! That's the whole porter code and it doesn't need to do any more than that. Hmm, this still doesn't feel right, does it? Well, no. What if our server requires TLS? We can't keep consuming bytes when it's the old process that held the TLS state (including decryption keys) in-memory. Well, we could just use one of our earlier tricks to hand the new process decryption keys, right? And then we figure out a way to convince our TLS library to support installing those keys mid-connection. Or, why don't we reach out to the kernel for help.
+
+Let me introduce you to another neat concept available to us on Linux (and FreeBSD): kTLS (Kernel TLS). kTLS is a kernel feature that offloads TLS encryption and decryption operations to the kernel space -- handling TLS is no longer tied to processes. And yet again, we have a [ktls](https://docs.rs/ktls) crate that cleanly abstracts this away, provided by the rustls project.
+
+```rust
+// Do the handshake entirely in userspace, same as any rustls server.
+let tls_stream = TlsAcceptor::from(server_config)
+    .accept(CorkStream::new(tcp_stream))
+    .await?;
+
+// Once the handshake is done, hand the connection to kTLS: it extracts
+// the negotiated keys and installs them into the kernel via
+// setsockopt(TCP_ULP, "tls").
+let ktls_stream = ktls::config_ktls_server(tls_stream).await?;
+
+// From here, reads and writes are plaintext — the kernel encrypts and
+// decrypts transparently. The underlying fd is now just as fd-passable
+// as any plain TCP socket.
+let (drained, raw_socket) = ktls_stream.into_raw();
+```
+
+The ktls crate API returns bytes that slipped through in userspace before the kernel takes over TLS which we capture as `drained`.
+
+Now, an important question: would this actually ship? Well, I already fleshed out a demo to test out and polish the core concept but then, that's somewhat controlled and not necessarily in a production environment. How about we look at existing battle-tested projects? 
+
+HAProxy, for example, uses a strikingly similar method for zero downtime reloads. Their R&D team used `SCM_RIGHTS` so new processes can accept connections without any gap. However, their approach is more conservative than mine as they migrate the listener, not individual in-flight connections -- the old process just keeps serving whatever it already accepted until those finish naturally. Mine goes a step further by handing off live, already-established connections mid-flight, which is exactly why I had to go a step further with kTLS, which HAProxy never needed.
+
+It's also worth mentioning that `SCM_RIGHTS` caps out at 253 fds per message. The HAProxy team never needed to worry about this as a handful of listeners rarely comes close. A connection-level handoff like mine would hit that ceiling easily at any real scale, and to get past this, we'll have to resort to batching fds in sets, which reintroduces exactly the kind of co-ordination complexity HAProxy just chose to avoid.
+
+So, would I ship this to production? Probably not as-is. The core mechanism holds up, but it definitely requires spending more time figuring out the right compromises to make for any given system you're handed: accounting for load across the handoff, real concurrent traffic, L7-specific cases I didn't explore, like mid-request HTTP/1.1 connections or open HTTP/2 streams, etc.
+
+I'm not going to say you should copy this 1:1. But next time when you stare at your server handling connections before a redeploy, I think it's worth asking whether you actually have to drop them.
+
+Check out the source code for my implementation of the experiment at [github.com/notxorand/porter](https://github.com/notxorand/porter)
+
+> Disclaimer: For my research and for fact-checking this write-up, I got help from AI/LLM (Claude Sonnet 5). However, the core concept within and prose of the article remains mine. There are also parts of the article that involve me defining things, almost verbatim, from other articles.
+
+---
+
+Suggested reading:
+
+1. [Beej's Guide to Network Programming](https://beej.us/guide/bgnet/)
+2. [Know your SCM_RIGHTS](https://blog.cloudflare.com/know-your-scm_rights/)
