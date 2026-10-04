@@ -168,3 +168,20 @@ main :not(pre) > code {
 .token.deleted {
 	color: #dc322f;
 }
+
+.caption {
+  @apply w-full flex items-center justify-center mb-2 text-sm text-center italic text-gray-700;
+}
+
+blockquote {
+  display: block;
+	border-radius: 0.125rem;
+  border-left: 0.25rem solid #ccc6b3;
+	background: #eee8d5;
+	padding: 0.1em;
+  @apply text-sm my-4 px-4;
+}
+
+img {
+  border-radius: 0.125rem;
+}
