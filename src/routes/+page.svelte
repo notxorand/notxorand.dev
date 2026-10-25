@@ -32,7 +32,7 @@
 </script>
 
 <p>
-	hi. I'm Ewan, I'm weird -- weird is awesome! I love art, tennis, and things that go super fast (like Formula 1). I write code for fun and work.
+	hi. I'm Ewan! I love art, tennis, and things that go super fast (like Formula 1). I write code for fun and work. I'm currently learning to produce music -- will set up a soundcloud soon :3
 </p>
 
 <span>
