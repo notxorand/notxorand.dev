@@ -29,7 +29,7 @@
 
 body {
 	font-family: 'Monospace', monospace;
-	@apply bg-[#fdf6e3];
+	@apply bg-[#fdead3];
 	text-align: justify;
 }
 
